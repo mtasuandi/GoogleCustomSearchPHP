@@ -21,7 +21,7 @@ if(!class_exists('GoogleCustomSearch'))
 		
 		public function customSearch($apikey, $seid, $keyword)
 		{
-			for($start = 1; $start <= ($this->end*10)+1; $start += 10)
+			for($start = 1; $start < ($this->end*10)+1; $start += 10)
 			{
 				$endpoint		= 'https://www.googleapis.com/customsearch/v1?';
 				$params 		= array(
