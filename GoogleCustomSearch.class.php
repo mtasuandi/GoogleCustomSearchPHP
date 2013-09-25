@@ -29,7 +29,7 @@ if(!class_exists('GoogleCustomSearch'))
 						'cx' 	=> $seid,
 						'start' => $start,
 						'num' 	=> 10,
-						'q' 	=> urlencode($keyword),);
+						'q' 	=> urlencode($keyword));
 				$buildparams 	= http_build_query($params);
 				$apiurl 		= $endpoint.$buildparams;
 				$options = array(
@@ -41,16 +41,60 @@ if(!class_exists('GoogleCustomSearch'))
 					)
 				);
 				$context 	= stream_context_create($options);
-				$search 	= file_get_contents($apiurl, false, $context);
-				$response	= json_decode($search);
-				$items 		= $response->items;
-				
-				foreach($items as $links)
+
+				if($this->_isCurl())
 				{
-					$results[] 	= array('link' => $links->link);
+					$search 	= $this->_curl($apiurl);
+				}
+				else
+				{
+					$search 	= file_get_contents($apiurl, false, $context);
+				}
+				
+				$response	= json_decode($search);
+				
+				if(!empty($response->items))
+				{
+					$items 		= $response->items;
+								
+					foreach($items as $links)
+					{
+						$results[] 	= array('link' => $links->link);
+					}
+				}
+				else
+				{
+					$results[] = array('link' => 'Empty results');
 				}
 			}
 			return $results;
+		}
+
+		private function _isCurl()
+		{
+		    return function_exists('curl_version');
+		}
+
+		private function _curl($url)
+		{
+			$options = array( 
+		        CURLOPT_RETURNTRANSFER => true,
+		        CURLOPT_HEADER         => false,
+		        CURLOPT_FOLLOWLOCATION => true, 
+		        CURLOPT_USERAGENT      => 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/29.0.1547.66 Safari/537.36',
+		        CURLOPT_AUTOREFERER    => true, 
+		        CURLOPT_CONNECTTIMEOUT => 120, 
+		        CURLOPT_TIMEOUT        => 120, 
+		        CURLOPT_MAXREDIRS      => 10,
+		        CURLOPT_SSL_VERIFYPEER => false 
+		    );
+
+			$ch      = curl_init($url); 
+		    curl_setopt_array($ch, $options);
+		    set_time_limit(240); 
+		    $content = curl_exec($ch);
+		    curl_close($ch);
+		    return $content;
 		}
 	}
 }
