@@ -64,7 +64,7 @@ if(!class_exists('GoogleCustomSearch'))
 				}
 				else
 				{
-					$results[] = array('link' => 'Empty results');
+					$results = array('link' => 'Empty results');
 				}
 			}
 			return $results;
